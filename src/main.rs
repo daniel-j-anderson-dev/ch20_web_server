@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     for (connection_id, stream) in listener.incoming().enumerate() {
         let stream: TcpStream = stream?;
         println!("Handling Connection #{}", connection_id + 1);
-        let mut http_request: Vec<String> = handle_connection(stream)?;
+        let mut http_request: Vec<String> = read_http_request(stream)?;
         
         println!("{:#?}", http_request);
         
@@ -27,7 +27,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     return Ok(());
 }
 
-fn handle_connection(mut stream: TcpStream) -> Result<Vec<String>, std::io::Error> {
+fn read_http_request(mut stream: TcpStream) -> Result<Vec<String>, std::io::Error> {
     let buf_reader: BufReader<&TcpStream> = BufReader::new(&mut stream);
 
     let mut http_request: Vec<String> = Vec::new();
