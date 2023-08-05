@@ -1,5 +1,8 @@
-use std::net::TcpListener;
-use std::error::Error;
+use std::{
+    io::{prelude::*, BufReader},
+    net::{TcpListener, TcpStream},
+    error::Error,
+};
 
 fn main() -> Result<(), Box<dyn Error>> {
     let listener = TcpListener::bind("127.0.0.1:7878")?;
