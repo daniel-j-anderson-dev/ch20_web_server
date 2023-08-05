@@ -17,7 +17,6 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn handle_connection(mut stream: TcpStream) -> Result<(), Box<dyn Error>> {
     let http_request: Vec<String> = read_http_request(&mut stream)?;
-    
     if http_request[0].contains(&"exit".to_string()) {
         std::process::exit(0)
     }
@@ -28,21 +27,17 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), Box<dyn Error>> {
     return Ok(());
 }
 
-fn read_http_request(stream: &mut TcpStream) -> Result<Vec<String>, Box<dyn Error>> {
+fn read_http_request(stream: &mut TcpStream) -> Result<Vec<String>, std::io::Error> {
     let buf_reader: BufReader<&TcpStream> = BufReader::new(stream);
 
     let mut http_request: Vec<String> = Vec::new();
     
     for line in buf_reader.lines().into_iter() {
         let line: String = line?;
-        if line.is_empty() {
+        if !line.is_empty() {
             http_request.push(line);
         };
     }
     
-    if !http_request.is_empty() {
-        return Ok(http_request);
-    } else {
-        return Err("Empty http request".into());
-    }
+    return Ok(http_request);
 }
