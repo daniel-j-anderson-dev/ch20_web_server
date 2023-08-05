@@ -17,9 +17,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
 fn handle_connection(mut stream: TcpStream) -> Result<(), Box<dyn Error>> {
     let http_request: Vec<String> = read_http_request(&mut stream)?;
-    if http_request[0].contains(&"exit".to_string()) {
-        std::process::exit(0)
-    }
+    println!("{http_request:#?}");
 
     let response: &[u8] = "HTTP/1.1 200 OK\r\n\r\n".as_bytes();
     stream.write_all(response)?;
