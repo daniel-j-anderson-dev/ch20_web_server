@@ -42,7 +42,6 @@ fn build_html_response(html_file_path: &str) -> Result<String, std::io::Error> {
     return Ok(response);
 }
 
-// why doesn't this work
 fn read_http_request(stream: &mut TcpStream) -> Result<Vec<String>, std::io::Error> {
     let buf_reader: BufReader<&TcpStream> = BufReader::new(stream);
     let mut http_request: Vec<String> = Vec::new();
@@ -50,12 +49,13 @@ fn read_http_request(stream: &mut TcpStream) -> Result<Vec<String>, std::io::Err
         let line: String = line?;
         if !line.is_empty() {
             http_request.push(line);
+        } else {
+            break;
         };
     }
     return Ok(http_request);
 }
 
-// why does this work
 fn read_http_request_book_ver(stream: &mut TcpStream) -> Vec<String> {
     let buffer_reader = BufReader::new(stream);
     let http_request = buffer_reader
