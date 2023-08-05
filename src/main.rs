@@ -29,6 +29,6 @@ fn handle_connection(mut stream: TcpStream) -> Vec<String> {
         .take_while(|line| !line.is_empty())
         .collect();
 
-    println!("{:?}", http_request);
+    println!("{:#?}", http_request);
     return http_request;
 }
