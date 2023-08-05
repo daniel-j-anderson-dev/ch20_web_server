@@ -25,23 +25,20 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), std::io::Error> {
     return Ok(());
 }
 
-fn build_html_response(html_file_path: &str) -> Result<String, std::io::Error> {
-    let status_line: &str = "HTTP/1.1 200 OK";
-    let contents: String = fs::read_to_string(html_file_path)?;
-    let response: String = format!("{}\r\nContent-Length: {}\r\n\r\n{}", status_line, contents.len(), contents);
-    return Ok(response);
-}
-
 fn read_http_request(stream: &mut TcpStream) -> Result<Vec<String>, std::io::Error> {
     let buf_reader: BufReader<&TcpStream> = BufReader::new(stream);
     let mut http_request: Vec<String> = Vec::new();
     for line in buf_reader.lines() {
         let line: String = line?;
-        if !line.is_empty() {
-            http_request.push(line);
-        } else {
-            break;
-        };
+        if line.is_empty() { break };
+        http_request.push(line);
     }
     return Ok(http_request);
+}
+
+fn build_html_response(html_file_path: &str) -> Result<String, std::io::Error> {
+    let status_line: &str = "HTTP/1.1 200 OK";
+    let contents: String = fs::read_to_string(html_file_path)?;
+    let response: String = format!("{}\r\nContent-Length: {}\r\n\r\n{}", status_line, contents.len(), contents);
+    return Ok(response);
 }
