@@ -27,15 +27,17 @@ fn main() -> Result<(), Box<dyn Error>> {
     return Ok(());
 }
 
-fn handle_connection(mut stream: TcpStream) -> Vec<String> {
+fn handle_connection(mut stream: TcpStream) -> Result<Vec<String>, std::io::Error> {
     let buf_reader: BufReader<&TcpStream> = BufReader::new(&mut stream);
 
-    let http_request: Vec<String> = buf_reader
-        .lines()
-        .map(|result| result.unwrap()) // explore more robust error handling
-        .take_while(|line| !line.is_empty())
-        .collect();
-
-    println!("{:#?}", http_request);
-    return http_request;
+    let mut http_request: Vec<String> = Vec::new();
+    
+    for line in buf_reader.lines().into_iter() {
+        let line: String = line?;
+        if line.is_empty() {
+            http_request.push(line);
+        };
+    }
+    
+    return Ok(http_request);
 }
