@@ -16,7 +16,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn handle_connection(mut stream: TcpStream) -> Result<(), std::io::Error> {
-    let http_request: Vec<String> = read_http_request(&mut stream)?;
+    let _http_request: Vec<String> = read_http_request(&mut stream)?;
 
     let response: String = build_html_response(r"E:\src\rust\web_server\example.html")?;
         
