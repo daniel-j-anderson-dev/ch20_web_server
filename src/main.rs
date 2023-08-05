@@ -9,7 +9,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     let listener: TcpListener = TcpListener::bind("127.0.0.1:7878")?;
 
     for stream in listener.incoming() {
-        handle_connection_book_ver(stream?)?;
+        handle_connection(stream?)?;
     }
         
     return Ok(());
@@ -20,16 +20,6 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), std::io::Error> {
 
     let response: String = build_html_response(r"E:\src\rust\web_server\example.html")?;
         
-    stream.write_all(response.as_bytes())?;
-
-    return Ok(());
-}
-
-fn handle_connection_book_ver(mut stream: TcpStream) -> Result<(), std::io::Error> {
-    let http_request: Vec<String> = read_http_request_book_ver(&mut stream);
-
-    let response: String = build_html_response(r"E:\src\rust\web_server\example.html")?;
-    
     stream.write_all(response.as_bytes())?;
 
     return Ok(());
@@ -54,14 +44,4 @@ fn read_http_request(stream: &mut TcpStream) -> Result<Vec<String>, std::io::Err
         };
     }
     return Ok(http_request);
-}
-
-fn read_http_request_book_ver(stream: &mut TcpStream) -> Vec<String> {
-    let buffer_reader = BufReader::new(stream);
-    let http_request = buffer_reader
-        .lines()
-        .map(|result| result.expect("io error"))
-        .take_while(|line| !line.is_empty())
-        .collect();
-    return http_request;
 }
