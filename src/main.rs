@@ -5,13 +5,20 @@ use std::{
 };
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let listener = TcpListener::bind("127.0.0.1:7878")?;
+    let listener: TcpListener = TcpListener::bind("127.0.0.1:7878")?;
     let mut http_requests: Vec<String> = Vec::new();
 
     for (connection_id, stream) in listener.incoming().enumerate() {
         let stream: TcpStream = stream?;
         println!("Handling Connection #{}", connection_id + 1);
         let mut http_request: Vec<String> = handle_connection(stream);
+        
+        println!("{:#?}", http_request);
+        
+        if http_request[0].contains(&"exit".to_string()) {
+            std::process::exit(0)
+        };
+        
         http_requests.append(&mut http_request);
     }
 
