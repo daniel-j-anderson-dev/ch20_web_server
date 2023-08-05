@@ -11,7 +11,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     for (connection_id, stream) in listener.incoming().enumerate() {
         let stream: TcpStream = stream?;
         println!("Handling Connection #{}", connection_id + 1);
-        let mut http_request: Vec<String> = handle_connection(stream);
+        let mut http_request: Vec<String> = handle_connection(stream)?;
         
         println!("{:#?}", http_request);
         
