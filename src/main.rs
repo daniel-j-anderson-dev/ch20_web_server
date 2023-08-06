@@ -26,8 +26,6 @@ fn handle_connection(mut stream: TcpStream) -> Result<(String, String), io::Erro
     
     stream.write_all(response.as_bytes())?;
 
-    println!("REQUEST\n{request}\nRESPONSE\n{response}\n");
-
     return Ok((request, response));
 }
 
@@ -48,18 +46,28 @@ fn parse_request(request: &str) -> Result<String, io::Error> {
     
     let (status, content_path) = match &request_line[..] {
         "GET / HTTP/1.1"      => ("HTTP/1.1 200 OK", r"html\hello.html"),
-        "GET /exit HTTP/1.1"  => std::process::exit(0),
+        "GET /exit HTTP/1.1" |
+        "GET /exit/ HTTP/1.1" => std::process::exit(0),
         "GET /sleep HTTP/1.1" => {
             thread::sleep(Duration::from_secs(5));
             ("HTTP/1.1 200 OK", r"html\hello.html")
         },
-        _                     => ("HTTP/1.1 404 NOT FOUND", r"html\404.html"),
+        "GET /assets/lake.png HTTP/1.1" => ("HTTP/1.1 200 OK", r"assets\lake.png"),
+        _ => ("HTTP/1.1 404 NOT FOUND", r"html\404.html"),
     };
     return build_response(status, content_path);
 }
 
 fn build_response(status: &str, content_path: &str) -> Result<String, io::Error> {
-    let content: String = fs::read_to_string(content_path)?;
-    let response: String = format!("{}\r\nContent-Length: {}\r\n\r\n{}", status, content.len(), content);
-    return Ok(response);
+    if content_path.contains(".html") {
+        let hmtl: String = fs::read_to_string(content_path)?;
+        let response: String = format!("{}\r\nContent-Length: {}\r\n\r\n{}", status, hmtl.len(), hmtl);
+        return Ok(response);
+    }
+    if content_path.contains(".png") || content_path.contains(".bmp") {
+        let image: Vec<u8> = fs::read(content_path)?;
+        let response: String = format!("{}\r\nContent-Type: image/bmp\r\n\r\n{}", status, base64::encode(&image));
+        return Ok(response);
+    }
+    return Ok(String::new());
 }
