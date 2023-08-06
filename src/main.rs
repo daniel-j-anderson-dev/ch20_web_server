@@ -10,9 +10,11 @@ use std::{
 fn main() -> Result<(), Box<dyn Error>> { 
     let listener: TcpListener = TcpListener::bind("127.0.0.1:7878")?;
 
-    for (connection_id, stream) in listener.incoming().enumerate() {
-        let (request, response) = handle_connection(stream?)?;
-        println!("CONNECTION {}\nREQUEST\n{}\nRESPONSE\n{}\n", connection_id + 1, request, response);
+    for (connection_id, possible_stream)
+    in listener.incoming().enumerate() {
+        let stream: TcpStream = possible_stream?;
+        println!("CONNECTION {}", connection_id + 1);
+        thread::spawn(|| handle_connection(stream));
     }
         
     return Ok(());
@@ -23,6 +25,8 @@ fn handle_connection(mut stream: TcpStream) -> Result<(String, String), io::Erro
     let response: String = parse_request(&request)?;
     
     stream.write_all(response.as_bytes())?;
+
+    println!("REQUEST\n{request}\nRESPONSE\n{response}\n");
 
     return Ok((request, response));
 }
@@ -40,15 +44,15 @@ fn read_request(stream: &mut TcpStream) -> Result<String, io::Error> {
 }
 
 fn parse_request(request: &str) -> Result<String, io::Error> {
-    let request_line = request.lines().next().unwrap();
+    let request_line = request.lines().next().unwrap_or_default();
     
     let (status, content_path) = match &request_line[..] {
         "GET / HTTP/1.1"      => ("HTTP/1.1 200 OK", r"html\hello.html"),
+        "GET /exit HTTP/1.1"  => std::process::exit(0),
         "GET /sleep HTTP/1.1" => {
             thread::sleep(Duration::from_secs(5));
             ("HTTP/1.1 200 OK", r"html\hello.html")
         },
-        "GET /exit HTTP/1.1"  => std::process::exit(0),
         _                     => ("HTTP/1.1 404 NOT FOUND", r"html\404.html"),
     };
     return build_response(status, content_path);
