@@ -1,11 +1,24 @@
+use std::{
+    sync::{
+        mpsc,
+        PoisonError,
+        MutexGuard,
+    }    
+};
+
+use crate::thread_pool::job::Job;
+
 pub type StdError = Box<dyn std::error::Error>;
-pub type SendError = std::sync::mpsc::SendError<Box<(dyn FnOnce() + Send + 'static)>>;
+pub type SendError = mpsc::SendError<Job>;
+pub type PoisionError<'a> = PoisonError<MutexGuard<'a, std::sync::mpsc::Receiver<Job>>>;
 
 #[derive(Debug)]
 pub enum Error {
     ThreadPoolSizeZero,
     Io(std::io::Error),
-    Send(SendError)
+    Send(SendError),
+    Recv(std::sync::mpsc::RecvError),
+    Poision(String),
 }
 impl Error {
     pub fn to_str(&self) -> &'static str {
@@ -13,12 +26,24 @@ impl Error {
             Error::ThreadPoolSizeZero => "Number of threads (pool_number) must be at least 1",
             Error::Io(error) => std_io_error_to_str(error),
             Error::Send(error) => {
-                println!("{error}");
+                eprint!("{error}");
                 return "std::sync::mpsc::SendError";
             },
+            Error::Recv(error) => {
+                eprint!("{error}");
+                return "std::sync::mpsc::RecvError";
+            }
+            Error::Poision(error) => {
+                eprint!("{error}");
+                return "PoisonError<MutexGuard<'a, std::sync::mpsc::Receiver<Job>>>";
+            }
         }
     }
+    pub fn println(&self) {
+        println!("{self}");
+    }
 }
+
 impl std::fmt::Display for Error {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.to_str())
