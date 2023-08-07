@@ -9,28 +9,37 @@ use std::{
         TcpStream
     },
     time::Duration,
-    error::Error,
     thread,
     fs,
 };
 
 pub mod thread_pool;
 use crate::thread_pool::ThreadPool;
+use crate::thread_pool::error::Error;
 
-fn main() -> Result<(), Box<dyn Error>> { 
-    let listener: TcpListener = TcpListener::bind("127.0.0.1:7878")?;
-    let pool: ThreadPool = ThreadPool::new(4)?;
+fn main() { 
+    let listener: TcpListener = TcpListener::bind("127.0.0.1:7878").unwrap();
+    let pool: ThreadPool = ThreadPool::new(4).unwrap();
 
     for (connection_id, possible_stream)
     in listener.incoming().enumerate() {
-        let stream: TcpStream = possible_stream?;
+        let stream: TcpStream = match possible_stream {
+            Ok(stream) => stream,
+            Err(error) => {
+                eprintln!("TcpStream error: {error}");
+                continue;
+            },
+        };
+
         println!("CONNECTION {}", connection_id + 1);
-        pool.execute(|| {
-            handle_connection(stream)
-        })?; // handle this better later
-    }
         
-    return Ok(());
+        match pool.execute(|| {
+            let _ = handle_connection(stream);
+        }) {
+            Err(error) => eprintln!("Thread pool error: {error}"),
+            _ => {}
+        }
+    }
 }
 
 fn handle_connection(mut stream: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
