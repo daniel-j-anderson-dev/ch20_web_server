@@ -24,15 +24,15 @@ impl Error {
             Error::ThreadPoolSizeZero => "Number of threads (pool_number) must be at least 1",
             Error::Io(error) => std_io_error_to_str(error),
             Error::MpscSend(error) => {
-                eprint!("{error}");
+                eprintln!("{error}");
                 return "std::sync::mpsc::SendError";
             },
             Error::Recv(error) => {
-                eprint!("{error}");
+                eprintln!("{error}");
                 return "std::sync::mpsc::RecvError";
             }
             Error::Poision(error) => {
-                eprint!("{error}");
+                eprintln!("{error}");
                 return "PoisonError<MutexGuard<'a, std::sync::mpsc::Receiver<Job>>>";
             }
         }
