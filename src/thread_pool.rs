@@ -49,10 +49,14 @@ impl ThreadPool {
     ///     E: Trait object that impl std::error::Error
     /// 
     /// trait object ex: Box<dyn std::error::Error>
-    pub fn execute<F>(&self, f: F,) -> Result<(), ThreadExecutionError>
+    pub fn execute<F>(&self, f: F,) -> Result<(), Error>
     where
-        F: FnOnce() -> Result<(), ThreadExecutionError> + Send + 'static
+        F: FnOnce() + Send + 'static
     {
-        return f();
+        let job = Box::new(f);
+        return match self.sender.send(job) {
+            Ok(_) => Ok(()),
+            Err(error) => Err(Error::Send(error)),
+        }
     }
 }
