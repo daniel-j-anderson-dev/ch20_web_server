@@ -27,11 +27,8 @@ fn main() -> Result<(), Box<dyn Error>> {
 }
 
 fn handle_connection(mut stream: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
-    let request: String = read_request(&mut stream)?;
-    let response: String = parse_request(&request)?;
-    
+    let response: String = parse_request(&read_request(&mut stream)?)?;
     stream.write_all(response.as_bytes())?;
-
     return Ok(());
 }
 
