@@ -30,10 +30,15 @@ impl ThreadPool {
 
     /// Executes the closure on an avliable thread, or it goes in the queue
     /// 
-    /// # The closure must return:
-    /// A Result
-    ///     OK(The unit type)
-    ///     Err(A trait object implementing std::error::Error)
+    /// The closure must return a Result<T, E>
+    /// 
+    /// where
+    /// 
+    ///     T: ()
+    /// 
+    ///     E: Trait object that impl std::error::Error
+    /// 
+    /// trait object ex: Box<dyn std::error::Error>
     pub fn execute<F>(&self, f: F,) -> Result<(), ThreadExecutionError>
     where
         F: FnOnce() -> Result<(), ThreadExecutionError> + Send + 'static
