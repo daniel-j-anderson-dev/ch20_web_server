@@ -1,12 +1,6 @@
-use std::{
-    thread::{
-        self,
-        JoinHandle
-    },
-    sync::{
-        mpsc,
-        MutexGuard
-    },
+use std::thread::{
+    self,
+    JoinHandle
 };
 
 use crate::{
@@ -37,14 +31,16 @@ impl Worker {
             .spawn(move || {
                 loop {
                     let job: Job = receiver
+                        
                         .lock()
                             .unwrap_or_else(|error| {
-                                println!("{}",Poision(error.to_string()));
+                                println!("{error}");
                                 std::process::exit(2);
                             })
+
                         .recv()
                             .unwrap_or_else(|error| {
-                                println!("{}",Recv(error));
+                                println!("{error}");
                                 std::process::exit(2);
                             }); 
                     
