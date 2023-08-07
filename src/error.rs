@@ -15,6 +15,7 @@ pub enum Error {
     Io(std::io::Error),
     MpscSend(SendError),
     Recv(std::sync::mpsc::RecvError),
+    IpParse(String),
 }
 impl Error {
     pub fn to_str(&self) -> &'static str {
@@ -27,8 +28,12 @@ impl Error {
             },
             Error::Recv(error) => {
                 eprintln!("{error}");
-                return "std::sync::mpsc::RecvError";
+                return "Error receiving from channel";
             }
+            Error::IpParse(error) => {
+                eprintln!("{error}");
+                return "Error parsing IP address";
+            },
         }
     }
     pub fn println(&self) {
