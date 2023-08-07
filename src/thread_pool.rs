@@ -1,7 +1,7 @@
-pub mod pool_creation_error;
+pub mod error;
 pub mod worker;
 
-use crate::thread_pool::pool_creation_error::PoolCreationError;
+use crate::thread_pool::error::Error;
 use crate::thread_pool::worker::Worker;
 
 type ThreadExecutionError = Box<dyn std::error::Error>;
@@ -14,9 +14,9 @@ impl ThreadPool {
     /// Create a new ThreadPool.
     /// 
     /// The pool_size is the number of threads in the returned pool.
-    pub fn new(pool_size: usize) -> Result<ThreadPool, PoolCreationError> {
+    pub fn new(pool_size: usize) -> Result<ThreadPool, Error> {
         if pool_size == 0 {
-            return Err(PoolCreationError::PoolSizeZero);
+            return Err(Error::PoolSizeZero);
         }
 
         let mut workers: Vec<Worker>  = Vec::with_capacity(pool_size);
