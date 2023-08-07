@@ -7,9 +7,12 @@ use std::sync::{
 mod worker;
 mod job;
 
-use crate::error::Error;
-use self::worker::Worker;
-use self::job::Job;
+use crate::{
+    error::Error,
+    Error::ThreadPoolSizeZero,
+    thread_pool::worker::Worker,
+    thread_pool::job::Job,
+};
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
@@ -20,12 +23,16 @@ impl ThreadPool {
     /// Create a new ThreadPool.
     /// 
     /// The pool_size is the number of threads in the returned pool.
+    /// 
+    /// pool_size must be greater than 0.
     pub fn new(pool_size: usize) -> Result<ThreadPool, Error> {
         if pool_size == 0 {
-            return Err(Error::ThreadPoolSizeZero);
+            return Err(ThreadPoolSizeZero);
         }
 
         let (sender, receiver) = mpsc::channel();
+        
+        // create a counted refrence of a mutual exclus
         let receiver = Arc::new(Mutex::new(receiver));
 
         let mut workers: Vec<Worker>  = Vec::with_capacity(pool_size);
