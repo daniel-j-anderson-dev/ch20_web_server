@@ -1,10 +1,17 @@
 use std::{
-    fs,
-    io::{self, prelude::*, BufReader},
-    net::{TcpListener, TcpStream},
+    io::{
+        self,
+        prelude::*,
+        BufReader
+    },
+    net::{
+        TcpListener,
+        TcpStream
+    },
     time::Duration,
-    thread,
     error::Error,
+    thread,
+    fs,
 };
 
 pub mod thread_pool;
