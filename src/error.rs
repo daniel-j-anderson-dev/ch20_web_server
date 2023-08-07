@@ -16,7 +16,7 @@ pub type PoisionError<'a> = PoisonError<MutexGuard<'a, std::sync::mpsc::Receiver
 pub enum Error {
     ThreadPoolSizeZero,
     Io(std::io::Error),
-    Send(SendError),
+    MpscSend(SendError),
     Recv(std::sync::mpsc::RecvError),
     Poision(String),
 }
@@ -25,7 +25,7 @@ impl Error {
         match self {
             Error::ThreadPoolSizeZero => "Number of threads (pool_number) must be at least 1",
             Error::Io(error) => std_io_error_to_str(error),
-            Error::Send(error) => {
+            Error::MpscSend(error) => {
                 eprint!("{error}");
                 return "std::sync::mpsc::SendError";
             },
