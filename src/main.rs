@@ -41,6 +41,8 @@ fn main() {
             std::process::exit(1);
         });
 
+    println!("\nListening on {ip_addr}");
+
     for (connection_id, possible_stream)
     in listener.incoming().enumerate() {
         let stream: TcpStream = match possible_stream {
@@ -72,7 +74,7 @@ fn get_ip_from_command_line() -> Result<String, Error> {
     let mut ip: String= String::new();
     let mut port: String = String::new();
 
-    println!("Please enter an IPv4 for the server to listen on. (Or press enter for 127.0.0.1:7878)");
+    println!("Please enter an IPv4 for the server to listen on. (Or press enter for default)");
     print!(">");
     let _ = stdout().flush();
     stdin().read_line(&mut ip)
