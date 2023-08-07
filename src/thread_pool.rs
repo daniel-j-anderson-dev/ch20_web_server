@@ -22,7 +22,7 @@ impl ThreadPool {
         let mut workers: Vec<Worker>  = Vec::with_capacity(pool_size);
 
         for worker_id in 0..pool_size {
-            workers.push(Worker::new(worker_id));
+            workers.push(Worker::new(worker_id)?);
         }
         
         return  Ok(ThreadPool { workers })
