@@ -1,4 +1,4 @@
-use std::thread::{self, Thread};
+use std::thread;
 
 #[derive(Debug)]
 pub enum PoolCreationError {
@@ -21,8 +21,19 @@ impl std::error::Error for PoolCreationError {
 
 type ThreadExecutionError = Box<dyn std::error::Error>;
 
+struct Worker {
+    id: usize,
+    thread: thread::JoinHandle<()>
+}
+impl Worker {
+    pub fn new(id: usize) -> Worker {
+        let thread: thread::JoinHandle<()> = thread::spawn(|| {});
+        return Worker { id, thread, }
+    }
+}
+
 pub struct ThreadPool {
-    workers: Vec<thread::JoinHandle<()>>,
+    workers: Vec<Worker>,
 }
 
 impl ThreadPool {
@@ -34,13 +45,24 @@ impl ThreadPool {
             return Err(PoolCreationError::PoolSizeZero);
         }
 
-        let workers: Vec<thread::JoinHandle<()>>  = Vec::with_capacity(pool_size);
+        let mut workers: Vec<Worker>  = Vec::with_capacity(pool_size);
+
+        for worker_id in 0..pool_size {
+            workers.push(Worker::new(worker_id));
+        }
         
-        return  Ok(ThreadPool { workers, })
+        return  Ok(ThreadPool { workers })
     }
-    pub fn execute<F>(&self, f: F,) -> Result<(String, String), ThreadExecutionError>
+
+    /// Executes the closure on an avliable thread, or it goes in the queue
+    /// 
+    /// # The closure must return:
+    /// A Result
+    ///     OK(The unit type)
+    ///     Err(A trait object implementing std::error::Error)
+    pub fn execute<F>(&self, f: F,) -> Result<(), ThreadExecutionError>
     where
-        F: FnOnce() -> Result<(String, String), ThreadExecutionError> + Send + 'static
+        F: FnOnce() -> Result<(), ThreadExecutionError> + Send + 'static
     {
         return f();
     }
