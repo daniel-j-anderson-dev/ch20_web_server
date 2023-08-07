@@ -13,7 +13,7 @@ impl Error {
             Error::PoolSizeZero => "Number of threads (pool_number) must be at least 1",
             Error::StdIo(error) => std_io_error_to_str(error),
             Error::Send(error) => {
-                println!("{}", error.to_string());
+                println!("{error}");
                 return "std::sync::mpsc::SendError";
             },
         }
