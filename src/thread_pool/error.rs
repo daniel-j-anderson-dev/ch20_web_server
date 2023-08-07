@@ -1,3 +1,5 @@
+pub type StdError = Box<dyn std::error::Error>;
+
 #[derive(Debug)]
 pub enum Error {
     PoolSizeZero,

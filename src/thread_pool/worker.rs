@@ -1,16 +1,31 @@
-use std::thread;
+use std::{
+    thread::{
+        self,
+        JoinHandle
+    },
+    sync::{
+        mpsc,
+        Arc,
+        Mutex
+    },
+};
 
-use crate::thread_pool::error::Error;
+use super::error::Error;
+
+type Job = Box<dyn FnOnce() + Send + 'static>;
+type Receiver = Arc<Mutex<mpsc::Receiver<Job>>>;
 
 pub struct Worker {
     id: usize,
-    thread: std::thread::JoinHandle<()>
+    thread: thread::JoinHandle<()>
 }
 impl Worker {
-    pub fn new(id: usize) -> Result<Worker, Error> {
-        let thread: thread::JoinHandle<()> = thread::Builder::new()
-            .spawn(|| {})
-            .map_err(|io_error| Error::StdIo(io_error))?;
+    pub fn new(id: usize, receiver: Receiver) -> Result<Worker, Error> {
+        let thread: JoinHandle<Arc<Mutex<mpsc::Receiver<Job>>>> = thread::Builder::new()
+            .spawn(|| {
+                receiver    
+            })
+            .map_err(|error| Error::StdIo(error))?;
         return Ok(Worker { id, thread, });
     }
 }
