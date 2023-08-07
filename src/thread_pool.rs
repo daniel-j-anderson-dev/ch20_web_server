@@ -4,19 +4,13 @@ use std::sync::{
     Arc
 };
 
-mod error;
+pub mod error;
 mod worker;
 mod job;
 
-use self::error::{
-    StdError,
-    Error,
-};
+use self::error::Error;
 use self::worker::Worker;
 use self::job::Job;
-
-
-type ThreadExecutionError = StdError;
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
