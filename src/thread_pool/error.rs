@@ -1,15 +1,21 @@
 pub type StdError = Box<dyn std::error::Error>;
+pub type SendError = std::sync::mpsc::SendError<Box<(dyn FnOnce() + Send + 'static)>>;
 
 #[derive(Debug)]
 pub enum Error {
     PoolSizeZero,
     StdIo(std::io::Error),
+    Send(SendError)
 }
 impl Error {
     pub fn to_str(&self) -> &'static str {
         match self {
             Error::PoolSizeZero => "Number of threads (pool_number) must be at least 1",
             Error::StdIo(error) => std_io_error_to_str(error),
+            Error::Send(error) => {
+                println!("{}", error.to_string());
+                return "std::sync::mpsc::SendError";
+            },
         }
     }
 }
