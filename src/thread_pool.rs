@@ -64,9 +64,7 @@ impl ThreadPool {
         F: FnOnce() + Send + 'static
     {
         let job: Box<F> = Box::new(job);
-        return match self.sender.send(job) {
-            Ok(_) => Ok(()),
-            Err(value) => Err(MpscSend(value)),
-        }
+        return self.sender.send(job)
+            .map_err(|error| MpscSend(error));
     }
 }
