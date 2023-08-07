@@ -5,7 +5,7 @@ use std::sync::{
 };
 
 mod worker;
-mod job;
+pub mod job;
 
 use crate::{
     error::Error,
@@ -13,6 +13,9 @@ use crate::{
     thread_pool::worker::Worker,
     thread_pool::job::Job,
 };
+
+
+type Receiver = Arc<Mutex<mpsc::Receiver<Job>>>;
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
@@ -33,12 +36,13 @@ impl ThreadPool {
         let (sender, receiver) = mpsc::channel();
         
         // create a counted refrence of a mutual exclus
-        let receiver = Arc::new(Mutex::new(receiver));
+        let receiver: Receiver = Arc::new(Mutex::new(receiver));
 
-        let mut workers: Vec<Worker>  = Vec::with_capacity(pool_size);
+        let mut workers: Vec<Worker> = Vec::with_capacity(pool_size);
 
         for worker_id in 0..pool_size {
-            workers.push(Worker::new(worker_id, Arc::clone(&receiver))?);
+            let receiver_clone: Receiver = Arc::clone(&receiver);
+            workers.push(Worker::new(worker_id, receiver_clone)?);
         }
         
         return  Ok(ThreadPool { workers, sender })
