@@ -8,7 +8,6 @@ use crate::thread_pool::job::Job;
 
 pub type StdError = Box<dyn std::error::Error>;
 pub type SendError = mpsc::SendError<Job>;
-pub type PoisionError<'a> = PoisonError<MutexGuard<'a, std::sync::mpsc::Receiver<Job>>>;
 
 #[derive(Debug)]
 pub enum Error {
