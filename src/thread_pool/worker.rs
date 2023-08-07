@@ -5,15 +5,16 @@ use std::{
     },
     sync::{
         mpsc,
-        Arc,
-        Mutex
+        MutexGuard
     },
 };
 
-use crate::error::Error;
-
-type Job = Box<dyn FnOnce() + Send + 'static>;
-type Receiver = Arc<Mutex<mpsc::Receiver<Job>>>;
+use crate::{
+    error::Error,
+    Error::*,
+    thread_pool::Receiver,
+    thread_pool::Job,
+};
 
 pub struct Worker {
     id: usize,
@@ -35,7 +36,22 @@ impl Worker {
         let thread: JoinHandle<()> = thread::Builder::new()
             .spawn(move || {
                 loop {
-                    let job = receiver.lock().unwrap().recv().unwrap();
+                    // let job = receiver.lock().unwrap().recv().unwrap(); 
+                    let job_lock: MutexGuard<'_, mpsc::Receiver<Job>> = match receiver.lock() {
+                        Ok(lock) => lock,
+                        Err(error) => {
+                            eprintln!("Worker {} couldn't get a lock on the job reciever: {}", id, Poision(error.to_string()));
+                            continue;
+                        },
+                    };
+
+                    let job: Job = match job_lock.recv() {
+                        Ok(job) => job, 
+                        Err(error) => {
+                            eprintln!("Worker {} couldn't get a job: {}", id, Recv(error));
+                            continue;
+                        }
+                    };
                     
                     println!("Worker {id} got a job; executing\n");
 
