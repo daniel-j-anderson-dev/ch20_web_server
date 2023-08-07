@@ -42,14 +42,14 @@ fn main() {
 
         println!("CONNECTION {}", connection_id + 1);
         
-        let task = || {
+        let job = || {
             handle_connection(stream)
                 .unwrap_or_else(|connection_error| {
                     eprintln!("Error while handling connection: {connection_error}");
                 });
         };
 
-        pool.execute(task)
+        pool.execute(job)
             .unwrap_or_else(|thread_pool_error| {
                 eprintln!("Thread pool error: {thread_pool_error}")
             });

@@ -59,11 +59,11 @@ impl ThreadPool {
     ///     E: Trait object that impl Err(crate::error::Error::MpscSend(std::sync::mpsc::SendError<U>))
     /// 
     /// trait object ex: Box<dyn std::error::Error>
-    pub fn execute<F>(&self, task: F,) -> Result<(), Error>
+    pub fn execute<F>(&self, job: F,) -> Result<(), Error>
     where
         F: FnOnce() + Send + 'static
     {
-        let job: Box<F> = Box::new(task);
+        let job: Box<F> = Box::new(job);
         return match self.sender.send(job) {
             Ok(_) => Ok(()),
             Err(value) => Err(MpscSend(value)),
