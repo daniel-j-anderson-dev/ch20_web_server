@@ -16,7 +16,6 @@ pub enum Error {
     Io(std::io::Error),
     MpscSend(SendError),
     Recv(std::sync::mpsc::RecvError),
-    Poision(String),
 }
 impl Error {
     pub fn to_str(&self) -> &'static str {
@@ -30,10 +29,6 @@ impl Error {
             Error::Recv(error) => {
                 eprintln!("{error}");
                 return "std::sync::mpsc::RecvError";
-            }
-            Error::Poision(error) => {
-                eprintln!("{error}");
-                return "PoisonError<MutexGuard<'a, std::sync::mpsc::Receiver<Job>>>";
             }
         }
     }
