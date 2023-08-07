@@ -1,5 +1,3 @@
-type ThreadExecutionError = Box<dyn std::error::Error>;
-
 pub struct Worker {
     id: usize,
     thread: std::thread::JoinHandle<()>
