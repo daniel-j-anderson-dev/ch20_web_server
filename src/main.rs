@@ -72,11 +72,15 @@ fn get_ip_from_command_line() -> Result<String, Error> {
     let mut ip: String= String::new();
     let mut port: String = String::new();
 
-    println!("Please enter an IPv4 for the server to listen on");
+    println!("Please enter an IPv4 for the server to listen on. (Or press enter for 127.0.0.1:7878)");
     print!(">");
     let _ = stdout().flush();
     stdin().read_line(&mut ip)
         .map_err(|error| Io(error))?;
+
+    if ip == "\r\n" {
+        return Ok(String::from("127.0.0.1:7878"))
+    }
 
     println!("\nPlease enter a port for the server to listen on");
     print!(">");
