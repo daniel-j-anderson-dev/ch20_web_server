@@ -13,9 +13,10 @@ use std::{
     fs,
 };
 
+pub mod error;
 pub mod thread_pool;
 use crate::thread_pool::ThreadPool;
-use crate::thread_pool::error::Error;
+use crate::error::Error;
 
 fn main() { 
     let listener: TcpListener = TcpListener::bind("127.0.0.1:7878").unwrap();
@@ -42,17 +43,24 @@ fn main() {
     }
 }
 
-fn handle_connection(mut stream: TcpStream) -> Result<(), Box<dyn std::error::Error>> {
-    let response: String = parse_request(&read_request(&mut stream)?)?;
-    stream.write_all(response.as_bytes())?;
-    return Ok(());
+fn handle_connection(mut stream: TcpStream) -> Result<(String, String), Error> {
+    let request: String = read_request(&mut stream)?;
+
+    let response: String = parse_request(&request)?;
+
+    stream.write_all(response.as_bytes())
+        .map_err(|error| Error::Io(error))?;
+
+    return Ok((request, response));
 }
 
-fn read_request(stream: &mut TcpStream) -> Result<String, io::Error> {
+
+fn read_request(stream: &mut TcpStream) -> Result<String, Error> {
     let buf_reader: BufReader<&mut TcpStream>  = BufReader::new(stream);
     let mut http_request: String = String::new();
     for line in buf_reader.lines() {
-        let line: String = line?;
+        let line: String = line
+            .map_err(|error| Error::Io(error))?;
         if line.is_empty() { break };
         http_request.push_str(&line);
         http_request.push('\n');
@@ -60,8 +68,8 @@ fn read_request(stream: &mut TcpStream) -> Result<String, io::Error> {
     return Ok(http_request);
 }
 
-fn parse_request(request: &str) -> Result<String, io::Error> {
-    let request_line = request.lines().next().unwrap_or_default();
+fn parse_request(request: &str) -> Result<String, Error> {
+    let request_line: &str = request.lines().next().unwrap_or_default();
     
     let (status, content_path) = match &request_line[..] {
         "GET / HTTP/1.1"      => ("HTTP/1.1 200 OK", r"html\hello.html"),
@@ -77,14 +85,16 @@ fn parse_request(request: &str) -> Result<String, io::Error> {
     return build_response(status, content_path);
 }
 
-fn build_response(status: &str, content_path: &str) -> Result<String, io::Error> {
+fn build_response(status: &str, content_path: &str) -> Result<String, Error> {
     if content_path.contains(".html") {
-        let hmtl: String = fs::read_to_string(content_path)?;
+        let hmtl: String = fs::read_to_string(content_path)
+            .map_err(|error| Error::Io(error))?;
         let response: String = format!("{}\r\nContent-Length: {}\r\n\r\n{}", status, hmtl.len(), hmtl);
         return Ok(response);
     }
     if content_path.contains(".png") || content_path.contains(".bmp") {
-        let image: String = base64::encode(&fs::read(content_path)?);
+        let image: String = base64::encode(&fs::read(content_path)
+            .map_err(|error| Error::Io(error))?);
         let response: String = format!("{}\r\nContent-Type: image/bmp\r\nContent-Length: {}\r\n\r\n{}", status, image.len(), image);
         return Ok(response);
     }
