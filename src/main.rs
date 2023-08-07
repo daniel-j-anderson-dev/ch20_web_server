@@ -63,7 +63,7 @@ fn main() {
 
 
 fn get_command_line_input(prompt: &str) -> Result<String, Error> {
-    print!("{prompt}");
+    println!("{prompt}");
 
     let mut command_line_input: String= String::new();
     
