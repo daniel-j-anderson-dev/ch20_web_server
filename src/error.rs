@@ -1,8 +1,4 @@
-use std::sync::{
-    mpsc,
-    PoisonError,
-    MutexGuard,
-};
+use std::sync::mpsc;
 
 use crate::thread_pool::job::Job;
 
