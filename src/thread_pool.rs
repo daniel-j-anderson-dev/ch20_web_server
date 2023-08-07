@@ -1,13 +1,26 @@
-pub mod error;
-pub mod worker;
+use std::sync::{
+    mpsc,
+    Mutex,
+    Arc
+};
 
-use crate::thread_pool::error::Error;
-use crate::thread_pool::worker::Worker;
+mod error;
+mod worker;
+mod job;
 
-type ThreadExecutionError = Box<dyn std::error::Error>;
+use self::error::{
+    StdError,
+    Error,
+};
+use self::worker::Worker;
+use self::job::Job;
+
+
+type ThreadExecutionError = StdError;
 
 pub struct ThreadPool {
     workers: Vec<Worker>,
+    sender: mpsc::Sender<Job>,
 }
 
 impl ThreadPool {
@@ -19,13 +32,16 @@ impl ThreadPool {
             return Err(Error::PoolSizeZero);
         }
 
+        let (sender, receiver) = mpsc::channel();
+        let receiver = Arc::new(Mutex::new(receiver));
+
         let mut workers: Vec<Worker>  = Vec::with_capacity(pool_size);
 
         for worker_id in 0..pool_size {
-            workers.push(Worker::new(worker_id)?);
+            workers.push(Worker::new(worker_id, Arc::clone(&receiver))?);
         }
         
-        return  Ok(ThreadPool { workers })
+        return  Ok(ThreadPool { workers, sender })
     }
 
     /// Executes the closure on an avliable thread, or it goes in the queue
