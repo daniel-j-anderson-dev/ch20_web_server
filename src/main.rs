@@ -7,20 +7,25 @@ use std::{
     error::Error,
 };
 
+use web_server::ThreadPool;
+
 fn main() -> Result<(), Box<dyn Error>> { 
     let listener: TcpListener = TcpListener::bind("127.0.0.1:7878")?;
+    let pool: ThreadPool = ThreadPool::new(4)?;
 
     for (connection_id, possible_stream)
     in listener.incoming().enumerate() {
         let stream: TcpStream = possible_stream?;
         println!("CONNECTION {}", connection_id + 1);
-        thread::spawn(|| handle_connection(stream));
+        pool.execute(|| {
+            handle_connection(stream)
+        })?; // handle this better later
     }
         
     return Ok(());
 }
 
-fn handle_connection(mut stream: TcpStream) -> Result<(String, String), io::Error> {
+fn handle_connection(mut stream: TcpStream) -> Result<(String, String), Box<dyn std::error::Error>> {
     let request: String = read_request(&mut stream)?;
     let response: String = parse_request(&request)?;
     
@@ -65,8 +70,8 @@ fn build_response(status: &str, content_path: &str) -> Result<String, io::Error>
         return Ok(response);
     }
     if content_path.contains(".png") || content_path.contains(".bmp") {
-        let image: Vec<u8> = fs::read(content_path)?;
-        let response: String = format!("{}\r\nContent-Type: image/bmp\r\n\r\n{}", status, base64::encode(&image));
+        let image: String = base64::encode(&fs::read(content_path)?);
+        let response: String = format!("{}\r\nContent-Type: image/bmp\r\nContent-Length: {}\r\n\r\n{}", status, image.len(), image);
         return Ok(response);
     }
     return Ok(String::new());
