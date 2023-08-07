@@ -17,9 +17,18 @@ pub mod thread_pool;
 use crate::thread_pool::ThreadPool;
 use crate::error::Error;
 
-fn main() { 
-    let listener: TcpListener = TcpListener::bind("127.0.0.1:7878").unwrap();
-    let pool: ThreadPool = ThreadPool::new(4).unwrap();
+fn main() {
+    let listener: TcpListener = TcpListener::bind("127.0.0.1:7878")
+        .unwrap_or_else(|error| {
+            eprintln!("{error}");
+            std::process::exit(1);
+        });
+
+    let pool: ThreadPool = ThreadPool::new(4)
+        .unwrap_or_else(|error| {
+            eprintln!("{error}");
+            std::process::exit(1);
+        });
 
     for (connection_id, possible_stream)
     in listener.incoming().enumerate() {
@@ -33,16 +42,21 @@ fn main() {
 
         println!("CONNECTION {}", connection_id + 1);
         
-        match pool.execute(|| {
-            let _ = handle_connection(stream);
-        }) {
-            Err(error) => eprintln!("Thread pool error: {error}"),
-            _ => {}
-        }
+        let task = || {
+            handle_connection(stream)
+                .unwrap_or_else(|connection_error| {
+                    eprintln!("Error while handling connection: {connection_error}");
+                });
+        };
+
+        pool.execute(task)
+            .unwrap_or_else(|thread_pool_error| {
+                eprintln!("Thread pool error: {thread_pool_error}")
+            });
     }
 }
 
-fn handle_connection(mut stream: TcpStream) -> Result<(String, String), Error> {
+fn handle_connection(mut stream: TcpStream) -> Result<(), Error> {
     let request: String = read_request(&mut stream)?;
 
     let response: String = parse_request(&request)?;
@@ -50,7 +64,7 @@ fn handle_connection(mut stream: TcpStream) -> Result<(String, String), Error> {
     stream.write_all(response.as_bytes())
         .map_err(|error| Error::Io(error))?;
 
-    return Ok((request, response));
+    return Ok(());
 }
 
 
