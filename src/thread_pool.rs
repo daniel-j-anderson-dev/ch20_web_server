@@ -9,7 +9,7 @@ pub mod job;
 
 use crate::{
     error::Error,
-    Error::ThreadPoolSizeZero,
+    Error::*,
     thread_pool::worker::Worker,
     thread_pool::job::Job,
 };
@@ -56,17 +56,17 @@ impl ThreadPool {
     /// 
     ///     T: ()
     /// 
-    ///     E: Trait object that impl std::error::Error
+    ///     E: Trait object that impl Err(crate::error::Error::MpscSend(std::sync::mpsc::SendError<U>))
     /// 
     /// trait object ex: Box<dyn std::error::Error>
-    pub fn execute<F>(&self, f: F,) -> Result<(), Error>
+    pub fn execute<F>(&self, task: F,) -> Result<(), Error>
     where
         F: FnOnce() + Send + 'static
     {
-        let job = Box::new(f);
+        let job: Box<F> = Box::new(task);
         return match self.sender.send(job) {
             Ok(_) => Ok(()),
-            Err(error) => Err(Error::Send(error)),
+            Err(value) => Err(MpscSend(value)),
         }
     }
 }
