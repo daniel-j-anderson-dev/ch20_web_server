@@ -61,6 +61,31 @@ fn main() {
     }
 }
 
+
+fn get_command_line_input(prompt: &str) -> Result<String, Error> {
+    print!("{prompt}");
+
+    let mut command_line_input: String= String::new();
+    
+    stdin().read_line(&mut command_line_input)
+        .map_err(|error| Io(error))?;
+
+    return Ok(command_line_input);
+}
+
+fn get_ip() -> Result<Ipv4Addr, Error> {
+    let mut prompt: String = String::from("Please enter the desired host IP\n>");
+    let input: String = get_command_line_input(&prompt)?; 
+    let ip: Ipv4Addr = match input.parse::<Ipv4Addr>() {
+        Ok(ip) => ip,
+        Err(error) => {
+            prompt.insert_str(0, &format!("{error}\n"));
+            get_ip()?
+        },
+    };
+    return Ok(ip);
+}
+
 fn handle_connection(mut stream: TcpStream) -> Result<(), Error> {
     let request: String = read_request(&mut stream)?;
 
