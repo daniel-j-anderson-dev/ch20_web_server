@@ -3,9 +3,9 @@ use std::{
         prelude::*,
         BufReader,
         stdin,
+        stdout,
     },
     net::{
-        Ipv4Addr,
         TcpListener,
         TcpStream
     },
@@ -23,7 +23,13 @@ use crate::{
 };
 
 fn main() {
-    let listener: TcpListener = TcpListener::bind("127.0.0.1:7878")
+    let ip_addr: String = get_ip_from_command_line()
+        .unwrap_or_else(|error| {
+            eprintln!("{error}");
+            std::process::exit(1);
+        });
+        
+    let listener: TcpListener = TcpListener::bind(&ip_addr)
         .unwrap_or_else(|error| {
             eprintln!("{error}");
             std::process::exit(1);
@@ -40,7 +46,7 @@ fn main() {
         let stream: TcpStream = match possible_stream {
             Ok(stream) => stream,
             Err(error) => {
-                eprintln!("TcpStream error: {error}");
+                eprintln!("TcpStream error: {}", Io(error));
                 continue;
             },
         };
@@ -62,18 +68,25 @@ fn main() {
 }
 
 
-fn get_ip_from_command_line(prompt: &str) -> Result<String, Error> {
-    println!("{prompt}");
+fn get_ip_from_command_line() -> Result<String, Error> {
+    let mut ip: String= String::new();
+    let mut port: String = String::new();
 
-    let mut command_line_input: String= String::new();
-    
-    stdin().read_line(&mut command_line_input)
+    println!("Please enter an IPv4 for the server to listen on");
+    print!(">");
+    let _ = stdout().flush();
+    stdin().read_line(&mut ip)
         .map_err(|error| Io(error))?;
 
-    match command_line_input.parse::<Ipv4Addr>() {
-        Ok(ip) => return Ok(command_line_input),
-        Err(error) => return Err(Error::IpParse(error.to_string())),
-    }
+    println!("\nPlease enter a port for the server to listen on");
+    print!(">");
+    let _ = stdout().flush();
+    stdin().read_line(&mut port)
+        .map_err(|error| Io(error))?;
+
+    let ip_port = format!("{}:{}", ip.trim(), port.trim());
+
+    return Ok(ip_port)
 }
 
 fn handle_connection(mut stream: TcpStream) -> Result<(), Error> {
