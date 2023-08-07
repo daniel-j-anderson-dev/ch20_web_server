@@ -36,22 +36,17 @@ impl Worker {
         let thread: JoinHandle<()> = thread::Builder::new()
             .spawn(move || {
                 loop {
-                    // let job = receiver.lock().unwrap().recv().unwrap(); 
-                    let job_lock: MutexGuard<'_, mpsc::Receiver<Job>> = match receiver.lock() {
-                        Ok(lock) => lock,
-                        Err(error) => {
-                            eprintln!("Worker {} couldn't get a lock on the job reciever: {}", id, Poision(error.to_string()));
-                            continue;
-                        },
-                    };
-
-                    let job: Job = match job_lock.recv() {
-                        Ok(job) => job, 
-                        Err(error) => {
-                            eprintln!("Worker {} couldn't get a job: {}", id, Recv(error));
-                            continue;
-                        }
-                    };
+                    let job: Job = receiver
+                        .lock()
+                            .unwrap_or_else(|error| {
+                                println!("{}",Poision(error.to_string()));
+                                std::process::exit(2);
+                            })
+                        .recv()
+                            .unwrap_or_else(|error| {
+                                println!("{}",Recv(error));
+                                std::process::exit(2);
+                            }); 
                     
                     println!("Worker {id} got a job; executing\n");
 
