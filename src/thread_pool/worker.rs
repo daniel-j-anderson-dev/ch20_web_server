@@ -5,6 +5,7 @@ use std::thread::{
 
 use crate::{
     error::Error,
+    Error::*,
     thread_pool::Receiver,
     thread_pool::Job,
 };
@@ -48,7 +49,7 @@ impl Worker {
                     job();
                 }
             })
-            .map_err(|error| Error::Io(error))?;
+            .map_err(|error| Io(error))?;
         return Ok(Worker { _id: id, _thread: thread, });
     }
 }
