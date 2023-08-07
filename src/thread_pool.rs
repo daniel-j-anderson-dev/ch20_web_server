@@ -1,36 +1,10 @@
-use std::thread;
+pub mod pool_creation_error;
+pub mod worker;
 
-#[derive(Debug)]
-pub enum PoolCreationError {
-    PoolSizeZero,
-}
-impl std::fmt::Display for PoolCreationError {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            PoolCreationError::PoolSizeZero => write!(f, "the number of threads in a pool (pool_size) must be at least 1"),
-        }
-    }
-}
-impl std::error::Error for PoolCreationError {
-    fn description(&self) -> &'static str {
-        match self {
-            PoolCreationError::PoolSizeZero => return "the number of threads in a pool (pool_size) must be at least 1",
-        }
-    }
-}
+use crate::thread_pool::pool_creation_error::PoolCreationError;
+use crate::thread_pool::worker::Worker;
 
 type ThreadExecutionError = Box<dyn std::error::Error>;
-
-struct Worker {
-    id: usize,
-    thread: thread::JoinHandle<()>
-}
-impl Worker {
-    pub fn new(id: usize) -> Worker {
-        let thread: thread::JoinHandle<()> = thread::spawn(|| {});
-        return Worker { id, thread, }
-    }
-}
 
 pub struct ThreadPool {
     workers: Vec<Worker>,

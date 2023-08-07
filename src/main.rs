@@ -7,7 +7,8 @@ use std::{
     error::Error,
 };
 
-use web_server::ThreadPool;
+pub mod thread_pool;
+use crate::thread_pool::ThreadPool;
 
 fn main() -> Result<(), Box<dyn Error>> { 
     let listener: TcpListener = TcpListener::bind("127.0.0.1:7878")?;
