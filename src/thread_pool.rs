@@ -18,7 +18,7 @@ use crate::{
 type Receiver = Arc<Mutex<mpsc::Receiver<Job>>>;
 
 pub struct ThreadPool {
-    workers: Vec<Worker>,
+    _workers: Vec<Worker>,
     sender: mpsc::Sender<Job>,
 }
 
@@ -45,7 +45,7 @@ impl ThreadPool {
             workers.push(Worker::new(worker_id, receiver_clone)?);
         }
         
-        return  Ok(ThreadPool { workers, sender })
+        return  Ok(ThreadPool { _workers: workers, sender })
     }
 
     /// Executes the closure on an avliable thread, or it goes in the queue

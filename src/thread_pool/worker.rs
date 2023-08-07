@@ -10,8 +10,8 @@ use crate::{
 };
 
 pub struct Worker {
-    id: usize,
-    thread: thread::JoinHandle<()>
+    _id: usize,
+    _thread: thread::JoinHandle<()>
 }
 impl Worker {
     /// Executes the closure on an avliable thread, or it goes in the queue
@@ -49,6 +49,6 @@ impl Worker {
                 }
             })
             .map_err(|error| Error::Io(error))?;
-        return Ok(Worker { id, thread, });
+        return Ok(Worker { _id: id, _thread: thread, });
     }
 }
