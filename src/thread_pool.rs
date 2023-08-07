@@ -4,11 +4,10 @@ use std::sync::{
     Arc
 };
 
-pub mod error;
 mod worker;
 mod job;
 
-use self::error::Error;
+use crate::error::Error;
 use self::worker::Worker;
 use self::job::Job;
 
@@ -23,7 +22,7 @@ impl ThreadPool {
     /// The pool_size is the number of threads in the returned pool.
     pub fn new(pool_size: usize) -> Result<ThreadPool, Error> {
         if pool_size == 0 {
-            return Err(Error::PoolSizeZero);
+            return Err(Error::ThreadPoolSizeZero);
         }
 
         let (sender, receiver) = mpsc::channel();

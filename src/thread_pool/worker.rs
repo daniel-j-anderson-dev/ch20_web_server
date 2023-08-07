@@ -10,7 +10,7 @@ use std::{
     },
 };
 
-use super::error::Error;
+use crate::error::Error;
 
 type Job = Box<dyn FnOnce() + Send + 'static>;
 type Receiver = Arc<Mutex<mpsc::Receiver<Job>>>;
@@ -42,7 +42,7 @@ impl Worker {
                     job();
                 }
             })
-            .map_err(|error| Error::StdIo(error))?;
+            .map_err(|error| Error::Io(error))?;
         return Ok(Worker { id, thread, });
     }
 }
