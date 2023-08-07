@@ -5,7 +5,6 @@ use std::thread::{
 
 use crate::{
     error::Error,
-    Error::*,
     thread_pool::Receiver,
     thread_pool::Job,
 };

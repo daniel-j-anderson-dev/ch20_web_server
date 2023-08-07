@@ -1,9 +1,11 @@
 use std::{
     io::{
         prelude::*,
-        BufReader
+        BufReader,
+        stdin,
     },
     net::{
+        Ipv4Addr,
         TcpListener,
         TcpStream
     },
@@ -14,8 +16,11 @@ use std::{
 
 pub mod error;
 pub mod thread_pool;
-use crate::thread_pool::ThreadPool;
-use crate::error::Error;
+use crate::{
+    thread_pool::ThreadPool,
+    error::Error,
+    Error::*
+};
 
 fn main() {
     let listener: TcpListener = TcpListener::bind("127.0.0.1:7878")
@@ -66,7 +71,6 @@ fn handle_connection(mut stream: TcpStream) -> Result<(), Error> {
 
     return Ok(());
 }
-
 
 fn read_request(stream: &mut TcpStream) -> Result<String, Error> {
     let buf_reader: BufReader<&mut TcpStream>  = BufReader::new(stream);
