@@ -21,7 +21,7 @@ impl Error {
             Error::MpscSend(error) => {
                 eprintln!("{error}");
                 return "std::sync::mpsc::SendError";
-            },
+            }
             Error::Recv(error) => {
                 eprintln!("{error}");
                 return "Error receiving from channel";
@@ -29,7 +29,7 @@ impl Error {
             Error::IpParse(error) => {
                 eprintln!("{error}");
                 return "Error parsing IP address";
-            },
+            }
         }
     }
     pub fn println(&self) {
@@ -50,26 +50,26 @@ impl std::error::Error for Error {
 
 fn std_io_error_to_str(error: &std::io::Error) -> &'static str {
     return match error.kind() {
-        std::io::ErrorKind::NotFound          => "std::io::Error: NotFound",
-        std::io::ErrorKind::PermissionDenied  => "std::io::Error: PermissionDenied",
+        std::io::ErrorKind::NotFound => "std::io::Error: NotFound",
+        std::io::ErrorKind::PermissionDenied => "std::io::Error: PermissionDenied",
         std::io::ErrorKind::ConnectionRefused => "std::io::Error: ConnectionRefused",
-        std::io::ErrorKind::ConnectionReset   => "std::io::Error: ConnectionReset",
+        std::io::ErrorKind::ConnectionReset => "std::io::Error: ConnectionReset",
         std::io::ErrorKind::ConnectionAborted => "std::io::Error: ConnectionAborted",
-        std::io::ErrorKind::NotConnected      => "std::io::Error: NotConnected",
-        std::io::ErrorKind::AddrInUse         => "std::io::Error: AddrInUse",
-        std::io::ErrorKind::AddrNotAvailable  => "std::io::Error: AddrNotAvailable",
-        std::io::ErrorKind::BrokenPipe        => "std::io::Error: BrokenPipe",
-        std::io::ErrorKind::AlreadyExists     => "std::io::Error: AlreadyExists",
-        std::io::ErrorKind::WouldBlock        => "std::io::Error: WouldBlock",
-        std::io::ErrorKind::InvalidInput      => "std::io::Error: InvalidInput",
-        std::io::ErrorKind::InvalidData       => "std::io::Error: InvalidData",
-        std::io::ErrorKind::TimedOut          => "std::io::Error: TimedOut",
-        std::io::ErrorKind::WriteZero         => "std::io::Error: WriteZero",
-        std::io::ErrorKind::Interrupted       => "std::io::Error: Interrupted",
-        std::io::ErrorKind::Unsupported       => "std::io::Error: Unsupported",
-        std::io::ErrorKind::UnexpectedEof     => "std::io::Error: UnexpectedEof",
-        std::io::ErrorKind::OutOfMemory       => "std::io::Error: OutOfMemory",
-        std::io::ErrorKind::Other             => "std::io::Error: Other",
+        std::io::ErrorKind::NotConnected => "std::io::Error: NotConnected",
+        std::io::ErrorKind::AddrInUse => "std::io::Error: AddrInUse",
+        std::io::ErrorKind::AddrNotAvailable => "std::io::Error: AddrNotAvailable",
+        std::io::ErrorKind::BrokenPipe => "std::io::Error: BrokenPipe",
+        std::io::ErrorKind::AlreadyExists => "std::io::Error: AlreadyExists",
+        std::io::ErrorKind::WouldBlock => "std::io::Error: WouldBlock",
+        std::io::ErrorKind::InvalidInput => "std::io::Error: InvalidInput",
+        std::io::ErrorKind::InvalidData => "std::io::Error: InvalidData",
+        std::io::ErrorKind::TimedOut => "std::io::Error: TimedOut",
+        std::io::ErrorKind::WriteZero => "std::io::Error: WriteZero",
+        std::io::ErrorKind::Interrupted => "std::io::Error: Interrupted",
+        std::io::ErrorKind::Unsupported => "std::io::Error: Unsupported",
+        std::io::ErrorKind::UnexpectedEof => "std::io::Error: UnexpectedEof",
+        std::io::ErrorKind::OutOfMemory => "std::io::Error: OutOfMemory",
+        std::io::ErrorKind::Other => "std::io::Error: Other",
         //unstable io ErrorKinds
         // std::io::ErrorKind::HostUnreachable         => "std::io::Error: HostUnreachable",
         // std::io::ErrorKind::NetworkUnreachable      => "std::io::Error: NetworkUnreachable",
@@ -92,6 +92,6 @@ fn std_io_error_to_str(error: &std::io::Error) -> &'static str {
         // std::io::ErrorKind::InvalidFilename         => "std::io::Error: InvalidFilename",
         // std::io::ErrorKind::ArgumentListTooLong     => "std::io::Error: ArgumentListTooLong",
         // std::io::ErrorKind::Uncategorized           => "std::io::Error: Uncategorized",
-        _ => "std io error"
-    }
+        _ => "std io error",
+    };
 }

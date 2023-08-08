@@ -1,19 +1,9 @@
-use std::sync::{
-    mpsc,
-    Mutex,
-    Arc
-};
+use std::sync::{mpsc, Arc, Mutex};
 
-mod worker;
 pub mod job;
+mod worker;
 
-use crate::{
-    error::Error,
-    Error::*,
-    thread_pool::worker::Worker,
-    thread_pool::job::Job,
-};
-
+use crate::{error::Error, thread_pool::job::Job, thread_pool::worker::Worker, Error::*};
 
 type Receiver = Arc<Mutex<mpsc::Receiver<Job>>>;
 
@@ -24,9 +14,9 @@ pub struct ThreadPool {
 
 impl ThreadPool {
     /// Create a new ThreadPool.
-    /// 
+    ///
     /// The pool_size is the number of threads in the returned pool.
-    /// 
+    ///
     /// pool_size must be greater than 0.
     pub fn new(pool_size: usize) -> Result<ThreadPool, Error> {
         if pool_size == 0 {
@@ -34,7 +24,7 @@ impl ThreadPool {
         }
 
         let (sender, receiver) = mpsc::channel();
-        
+
         // create a counted refrence of a mutual exclus
         let receiver: Receiver = Arc::new(Mutex::new(receiver));
 
@@ -44,27 +34,29 @@ impl ThreadPool {
             let receiver_clone: Receiver = Arc::clone(&receiver);
             workers.push(Worker::new(worker_id, receiver_clone)?);
         }
-        
-        return  Ok(ThreadPool { _workers: workers, sender })
+
+        return Ok(ThreadPool {
+            _workers: workers,
+            sender,
+        });
     }
 
     /// Executes the closure on an avliable thread, or it goes in the queue
-    /// 
+    ///
     /// The closure must return a Result<T, E>
-    /// 
+    ///
     /// where
-    /// 
+    ///
     ///     T: ()
-    /// 
+    ///
     ///     E: Trait object that impl Err(crate::error::Error::MpscSend(std::sync::mpsc::SendError<U>))
-    /// 
+    ///
     /// trait object ex: Box<dyn std::error::Error>
-    pub fn execute<F>(&self, job: F,) -> Result<(), Error>
+    pub fn execute<F>(&self, job: F) -> Result<(), Error>
     where
-        F: FnOnce() + Send + 'static
+        F: FnOnce() + Send + 'static,
     {
         let job: Box<F> = Box::new(job);
-        return self.sender.send(job)
-            .map_err(|error| MpscSend(error));
+        return self.sender.send(job).map_err(|error| MpscSend(error));
     }
 }

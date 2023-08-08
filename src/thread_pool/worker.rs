@@ -1,51 +1,44 @@
-use std::thread::{
-    self,
-    JoinHandle
-};
+use std::thread::{self, JoinHandle};
 
-use crate::{
-    error::Error,
-    Error::*,
-    thread_pool::Receiver,
-    thread_pool::Job,
-};
+use crate::{error::Error, thread_pool::Job, thread_pool::Receiver, Error::*};
 
 pub struct Worker {
     _id: usize,
-    _thread: thread::JoinHandle<()>
+    _thread: thread::JoinHandle<()>,
 }
 impl Worker {
     /// Executes the closure on an avliable thread, or it goes in the queue
-    /// 
+    ///
     /// The closure must return a Result<T, E>
-    /// 
+    ///
     /// where
-    /// 
+    ///
     ///     T: ()
-    /// 
+    ///
     ///     E: crate::thread_pool:error::Error
     pub fn new(id: usize, receiver: Receiver) -> Result<Worker, Error> {
         let thread: JoinHandle<()> = thread::Builder::new()
-            .spawn(move || {
-                loop {
-                    let job: Job = receiver
-                        .lock()
-                            .unwrap_or_else(|error| {
-                                println!("{error}");
-                                std::process::exit(2);
-                            })
-                        .recv()
-                            .unwrap_or_else(|error| {
-                                println!("{error}");
-                                std::process::exit(2);
-                            }); 
-                    
-                    println!("Worker {id} got a job; executing\n");
+            .spawn(move || loop {
+                let job: Job = receiver
+                    .lock()
+                    .unwrap_or_else(|error| {
+                        println!("{error}");
+                        std::process::exit(2);
+                    })
+                    .recv()
+                    .unwrap_or_else(|error| {
+                        println!("{error}");
+                        std::process::exit(2);
+                    });
 
-                    job();
-                }
+                println!("Worker {id} got a job; executing\n");
+
+                job();
             })
             .map_err(|error| Io(error))?;
-        return Ok(Worker { _id: id, _thread: thread, });
+        return Ok(Worker {
+            _id: id,
+            _thread: thread,
+        });
     }
 }
