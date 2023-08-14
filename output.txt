@@ -1,14 +1,15 @@
+// Sample output if the server only handles the first 4 connections
 Creating Worker 0
 Creating Worker 1
 Creating Worker 2
 Worker 0 is waiting for a job message
-Worker 1 is waiting for a job message
 Creating Worker 3
+Worker 1 is waiting for a job message
 Worker 2 is waiting for a job message
-Worker 3 is waiting for a job message
 
 -------------------Listening on 127.0.0.1:7878-------------------
 
+Worker 3 is waiting for a job message
 
 -----------------------
 CONNECTION 0
@@ -19,14 +20,27 @@ Worker 0 is waiting for a job message
 -----------------------
 CONNECTION 1
 -----------------------
-Shutting down thread pool; Closing channel
 Wokrer 1 got a job; executing.
-Channel closed; Worker 2 shutting down.
-Channel closed; Worker 3 shutting down.
-Channel closed; Worker 0 shutting down.
-Shutting down worker 0
 Worker 1 is waiting for a job message
+
+-----------------------
+CONNECTION 2
+-----------------------
+Wokrer 2 got a job; executing.
+Worker 2 is waiting for a job message
+
+-----------------------
+CONNECTION 3
+-----------------------
+Thread pool is closing the channel
+Wokrer 3 got a job; executing.
 Channel closed; Worker 1 shutting down.
-Shutting down worker 1
-Shutting down worker 2
-Shutting down worker 3
+Channel closed; Worker 0 shutting down.
+Channel closed; Worker 2 shutting down.
+Thread pool joining worker 0's thread
+Worker 3 is waiting for a job message
+Channel closed; Worker 3 shutting down.
+Thread pool joining worker 1's thread
+Thread pool joining worker 2's thread
+Thread pool joining worker 3's thread
+All worker threads joined main thread. Dropping the thread pool
