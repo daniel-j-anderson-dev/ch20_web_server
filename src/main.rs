@@ -26,7 +26,7 @@ fn main() {
 
     println!("\n-------------------Listening on {ip_addr}-------------------\n");
 
-    for (connection_id, possible_stream) in listener.incoming().take(2).enumerate() {
+    for (connection_id, possible_stream) in listener.incoming().enumerate() {
         let stream: TcpStream = match possible_stream {
             Ok(stream) => stream,
             Err(error) => {
