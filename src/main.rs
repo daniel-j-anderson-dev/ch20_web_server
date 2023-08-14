@@ -37,17 +37,15 @@ fn main() {
 
         println!("\n-----------------------\nCONNECTION {}\n-----------------------", connection_id);
 
-        let job = || {
+        match pool.execute(|| {
             handle_connection(stream)
             .unwrap_or_else(|error| {
                 eprintln!("Error while handling connection: {error}");
             });
+        }) {
+            Err(error) => eprintln!("Thread pool error: {error}"),
+            Ok(_) => {},
         };
-
-        pool.execute(job)
-        .unwrap_or_else(|error| {
-            eprintln!("Thread pool error: {error}")
-        });
     }
 }
 
