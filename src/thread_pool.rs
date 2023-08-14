@@ -65,16 +65,17 @@ impl ThreadPool {
 
 impl Drop for ThreadPool {
     fn drop(&mut self) {
-        println!("Shutting down thread pool; Closing channel");
+        println!("Thread pool is closing the channel");
         drop(self.sender.take());
 
         for worker in self.workers.iter_mut() {
             if let Some(thread) = worker.thread.take() {
                 match thread.join() {
-                    Ok(_) => println!("Shutting down worker {}", worker.id),
+                    Ok(_) => println!("Thread pool joining worker {}'s thread", worker.id),
                     Err(error) => eprintln!("Error Shutting down worker: {:?}", error)
                 }
             }
         }
+        println!("All worker threads joined main thread. Dropping the thread pool");
     }
 }
