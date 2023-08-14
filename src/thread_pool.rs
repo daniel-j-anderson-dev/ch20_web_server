@@ -8,8 +8,8 @@ use crate::{error::Error, thread_pool::job::Job, thread_pool::worker::Worker, Er
 type Receiver = Arc<Mutex<mpsc::Receiver<Job>>>;
 
 pub struct ThreadPool {
-    _workers: Vec<Worker>,
-    sender: mpsc::Sender<Job>,
+    workers: Vec<Worker>,
+    sender: Option<mpsc::Sender<Job>>,
 }
 
 impl ThreadPool {
@@ -36,8 +36,8 @@ impl ThreadPool {
         }
 
         return Ok(ThreadPool {
-            _workers: workers,
-            sender,
+            workers,
+            sender: Some(sender),
         });
     }
 
@@ -50,13 +50,31 @@ impl ThreadPool {
     ///     T: ()
     ///
     ///     E: Trait object that impl Err(crate::error::Error::MpscSend(std::sync::mpsc::SendError<U>))
-    ///
-    /// trait object ex: Box<dyn std::error::Error>
     pub fn execute<F>(&self, job: F) -> Result<(), Error>
     where
         F: FnOnce() + Send + 'static,
     {
         let job: Box<F> = Box::new(job);
-        return self.sender.send(job).map_err(|error| MpscSend(error));
+
+        return match &self.sender {
+            Some(sender) => sender.send(job).map_err(|error| MpscSend(error)),
+            None => Err(std::io::Error::new(std::io::ErrorKind::Other, "No sender. was it dropped?").into())
+        };
+    }
+}
+
+impl Drop for ThreadPool {
+    fn drop(&mut self) {
+        println!("Shutting down thread pool; Closing channel");
+        drop(self.sender.take());
+
+        for worker in self.workers.iter_mut() {
+            if let Some(thread) = worker.thread.take() {
+                match thread.join() {
+                    Ok(_) => println!("Shutting down worker {}", worker.id),
+                    Err(error) => eprintln!("Error Shutting down worker: {:?}", error)
+                }
+            }
+        }
     }
 }
